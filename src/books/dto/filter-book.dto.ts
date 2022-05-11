@@ -9,9 +9,9 @@ export class FilterBookDto {
   @IsOptional()
   category: string;
   @IsOptional()
-  min_year: string;
+  min_year: number;
   @IsOptional()
   @IsInt()
   @Type(() => Number)
-  max_year: string;
+  max_year: number;
 }

@@ -1,61 +1,53 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateBookDto } from './dto/create-book.dto';
 import { FilterBookDto } from './dto/filter-book.dto';
+import { BookRepository } from './repository/book.repository';
+import { Book } from './entity/book.entity';
+import { async } from 'rxjs';
 @Injectable()
 export class BooksService {
   //data source
-  private books: any[] = [];
-  getAllBooks(filter: FilterBookDto): any[] {
-    const { title, author, category, max_year, min_year } = filter;
-    return this.books;
+  constructor(
+    @InjectRepository(BookRepository)
+    private readonly bookRepository: BookRepository,
+  ) {}
+
+  async getBooks(filter: FilterBookDto): Promise<Book[]> {
+    return await this.bookRepository.getBooks(filter);
   }
 
-  getBook(id: string) {
-    const bookIdx = this.findBookById(id);
-    return this.books;
+  async createBook(CreateBookDto: CreateBookDto): Promise<void> {
+    await this.bookRepository.createBook(CreateBookDto);
   }
 
-  //   createBook(title: string, author: string, category: string) {
-  //     this.books.push({
-  //       id: uuidv4(),
-  //       title,
-  //       author,
-  //       category,
-  //     });
-
-  //     return {
-  //       message: 'Book created successfully',
-  //     };
-  //   }
-
-  createBook(CreateBookDto: CreateBookDto) {
-    const { title, author, category, year } = CreateBookDto;
-    this.books.push({
-      id: uuidv4(),
-      title,
-      author,
-      category,
-      year,
-    });
-
-    return {
-      message: 'Book created successfully',
-    };
-  }
-  updateBook(id: string, title: string, author: string, category: string) {
-    const bookIdx = this.findBookById(id);
-    this.books[bookIdx].title = title;
-    this.books[bookIdx].author = author;
-    this.books[bookIdx].category = category;
-    return { message: 'update success' };
-  }
-  findBookById(id: string) {
-    const bookIdx = this.books.findIndex((book) => book.id === id);
-    if (bookIdx === -1) {
-      throw new NotFoundException('buku tidak ditemukan');
+  async getBookById(id: string): Promise<Book> {
+    const book = await this.bookRepository.findOne(id);
+    if (!book) {
+      throw new NotFoundException(`Book with id ${id} not found`);
     }
 
-    return bookIdx;
+    return book;
+  }
+
+  async updateBook(id: string, CreateBookDto) {
+    const { title, author, category, year } = CreateBookDto;
+    const book = await this.getBookById(id);
+    book.title = title;
+    book.author = author;
+    book.category = category;
+    book.year = year;
+    await book.save();
+  }
+
+  async deleteBook(id: string): Promise<void> {
+    const result = await this.bookRepository.delete(id);
+    console.log(result);
+    if(result.affected === 0){
+        throw new NotFoundException(`Book with id ${id} not found`);
+    }
+  
+   
   }
 }
