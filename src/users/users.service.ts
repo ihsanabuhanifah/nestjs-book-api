@@ -17,4 +17,8 @@ export class UsersService {
   async getUsers(): Promise<User[]> {
     return await this.userRepository.getUsers();
   }
+
+  async validateUser(email: string, password: string): Promise<User> {
+    return await this.userRepository.validateUser(email, password);
+  }
 }
