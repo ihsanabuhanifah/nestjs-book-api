@@ -3,12 +3,17 @@ import { Book } from '../entity/book.entity';
 import { FilterBookDto } from '../dto/filter-book.dto';
 import { CreateBookDto } from '../dto/create-book.dto';
 import { InternalServerErrorException } from '@nestjs/common';
+import { User } from '../../users/entity/users.entity';
 
 @EntityRepository(Book)
 export class BookRepository extends Repository<Book> {
-  async getBooks(filter: FilterBookDto): Promise<Book[]> {
+  async getBooks(user: User, filter: FilterBookDto): Promise<Book[]> {
     const { title, author, category, min_year, max_year } = filter;
-    const query = this.createQueryBuilder('book');
+    console.log('user' , user);
+    
+    const query = this.createQueryBuilder('book').where('book.user = :userId', {
+      userId: user.id,
+    });
     if (title) {
       query.andWhere('book.title LIKE :title', { title: `%${title}%` });
     }
@@ -32,10 +37,11 @@ export class BookRepository extends Repository<Book> {
     return await query.getMany();
   }
 
-  async createBook(CreateBookDto: CreateBookDto): Promise<void> {
+  async createBook(user:User, CreateBookDto: CreateBookDto): Promise<void> {
     const { title, author, category, year } = CreateBookDto;
     const book = this.create();
     book.title = title;
+    book.user = user;
     book.author = author;
     (book.category = category), (book.year = year);
     try {
@@ -44,7 +50,4 @@ export class BookRepository extends Repository<Book> {
       throw new InternalServerErrorException(error);
     }
   }
-
-  
-
 }

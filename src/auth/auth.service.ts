@@ -87,4 +87,13 @@ export class AuthService {
     );
     return refresh_token;
   }
+
+  async revokeRefreshToken(id: string): Promise<void> {
+    const refreshToken = await this.refreshTokenRepository.findOne(id);
+    if (!refreshToken) {
+      throw new UnauthorizedException('refresh token invalid');
+    }
+    refreshToken.IsRevoked = true;
+    await refreshToken.save();
+  }
 }

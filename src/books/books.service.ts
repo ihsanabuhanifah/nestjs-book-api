@@ -5,6 +5,7 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { FilterBookDto } from './dto/filter-book.dto';
 import { BookRepository } from './repository/book.repository';
 import { Book } from './entity/book.entity';
+import { User } from 'src/users/entity/users.entity';
 import { async } from 'rxjs';
 @Injectable()
 export class BooksService {
@@ -14,12 +15,12 @@ export class BooksService {
     private readonly bookRepository: BookRepository,
   ) {}
 
-  async getBooks(filter: FilterBookDto): Promise<Book[]> {
-    return await this.bookRepository.getBooks(filter);
+  async getBooks(user : User , filter: FilterBookDto): Promise<Book[]> {
+    return await this.bookRepository.getBooks(user , filter);
   }
 
-  async createBook(CreateBookDto: CreateBookDto): Promise<void> {
-    await this.bookRepository.createBook(CreateBookDto);
+  async createBook(user:User , CreateBookDto: CreateBookDto): Promise<void> {
+    await this.bookRepository.createBook(user, CreateBookDto);
   }
 
   async getBookById(id: string): Promise<Book> {
